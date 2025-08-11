@@ -26,6 +26,7 @@ class BranchFactory extends Factory
     {
         return [
             'name' => $this->faker->word,
+            'retention_rate' => $this->faker->numberBetween(1, 10),
         ];
     }
 }
