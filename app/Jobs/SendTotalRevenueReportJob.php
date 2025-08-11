@@ -10,6 +10,7 @@ use Illuminate\Http\Client\RequestException;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class SendTotalRevenueReportJob implements ShouldQueue
 {
@@ -44,11 +45,31 @@ class SendTotalRevenueReportJob implements ShouldQueue
      */
     public function handle(): void
     {
-        $verificationResponse = $this->postVerification();
+        try {
+            $verificationResponse = $this->postVerification();
+        } catch (RequestException $e) {
+            Log::error('Verification request failed', ['error' => $e->getMessage()]);
+            
+            $verificationResponse = null;
+        }
 
-        $reportResponse = $this->postReport($verificationResponse);
+        try {
+            if($verificationResponse) {
+                $reportResponse = $this->postReport($verificationResponse);
+            }
+        } catch (RequestException $e) {
+            Log::error('Report request failed', ['error' => $e->getMessage()]);
+            
+            $reportResponse = null;
+        }
 
-        $this->postReportConfirmation($reportResponse);
+        try {
+            if($reportResponse) {
+                $this->postReportConfirmation($reportResponse);
+            }
+        } catch (RequestException $e) {
+            Log::error('Report confirmation request failed', ['error' => $e->getMessage()]);
+        }
     }
 
     /**

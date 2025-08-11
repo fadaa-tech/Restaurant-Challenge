@@ -2,6 +2,8 @@
 
 namespace Database\Factories;
 
+use App\Models\Branch;
+use App\Models\Customer;
 use App\Models\Order;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -26,6 +28,11 @@ class OrderFactory extends Factory
     {
         return [
             'name' => fake()->name(),
+            'customer_id' => Customer::inRandomOrder()->first()->id,
+            'branch_id' => Branch::inRandomOrder()->first()->id,
+            'status' => fake()->randomElement(['pending', 'completed', 'cancelled']),
+            'payment_method' => fake()->randomElement(['paypal', 'cod']),
+            'total_amount' => fake()->randomFloat(2, 10, 1000),
         ];
     }
 }
