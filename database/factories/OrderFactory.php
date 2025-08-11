@@ -30,6 +30,9 @@ class OrderFactory extends Factory
             'name' => fake()->name(),
             'customer_id' => Customer::inRandomOrder()->first()->id,
             'branch_id' => Branch::inRandomOrder()->first()->id,
+            'status' => fake()->randomElement(['pending', 'completed', 'cancelled']),
+            'payment_method' => fake()->randomElement(['paypal', 'cod']),
+            'total_amount' => fake()->randomFloat(2, 10, 1000),
         ];
     }
 }
