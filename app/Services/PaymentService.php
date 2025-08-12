@@ -27,18 +27,21 @@ class PaymentService
     
             return [
                 'status' => $result['status'],
-                'approval_link' => reset($approvalLink)['href']
+                'data' => [
+                    'approval_link' => reset($approvalLink)['href']
+                ]
             ];
         }
 
         return [
-            'status' => 'Cannot process payment.'
+            'status' => 'failed',
+            'message' => 'Payment gateway error.'
         ];
     }
 
-    public function capturePayment($orderId)
+    public function capturePayment($token)
     {
-        $captureResponse = $this->paymentGateway->capture($orderId);
+        $captureResponse = $this->paymentGateway->capture($token);
 
         $data['status'] = 'failed';
         
@@ -52,7 +55,7 @@ class PaymentService
 
             $data = [
                 'status' => 'success',
-                'token' => $orderId,
+                'token' => $token,
                 'amount' => $paymentDetails['amount']['value'],
                 'currency' => $paymentDetails['amount']['currency_code']
             ];

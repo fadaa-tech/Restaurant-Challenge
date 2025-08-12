@@ -12,14 +12,15 @@ class PaymentController extends Controller
 {
     public function __construct(protected PaymentService $paymentService,  protected OrderService $orderService) {}
 
-    public function processPayment(ProcessPaymentRequest $request)
-    {
-        $order_id = $request->input('order_id');
+    // we don't need this method, payment processing is handled in the OrderService
+    // public function processPayment(ProcessPaymentRequest $request)
+    // {
+    //     $order_id = $request->input('order_id');
 
-        $result = $this->paymentService->processPayment($order_id);
+    //     $result = $this->paymentService->processPayment($order_id);
         
-        return response()->json($result);
-    }
+    //     return response()->json($result);
+    // }
 
     public function capturePayment(Request $request)
     {

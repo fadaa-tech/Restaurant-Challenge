@@ -3,7 +3,8 @@
 namespace App\Providers;
 
 use App\Contracts\PaymentGatewayInterface;
-use App\Payments\PayPalPaymentGateway;
+use App\Factories\PaymentGatewayFactory;
+use App\Strategies\Payments\PayPalPaymentGateway;
 use Illuminate\Support\ServiceProvider;
 
 class PaymentServiceProvider extends ServiceProvider
@@ -14,7 +15,7 @@ class PaymentServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(PaymentGatewayInterface::class, function ($app) {
-            return new PayPalPaymentGateway();
+            return PaymentGatewayFactory::pay(request()->get('payment_method'));
         });
     }
 

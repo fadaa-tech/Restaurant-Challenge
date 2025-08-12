@@ -1,10 +1,9 @@
 <?php
 
-namespace App\Payments;
+namespace App\Strategies\Payments;
 
 use App\Contracts\PaymentGatewayInterface;
 use App\Models\Order;
-use Exception;
 use Illuminate\Support\Facades\Http;
 
 class PayPalPaymentGateway implements PaymentGatewayInterface
@@ -12,17 +11,15 @@ class PayPalPaymentGateway implements PaymentGatewayInterface
     private string $clientId;
     private string $secret;
     private string $baseUrl;
-    private string $sandboxAccount;
 
     public function __construct()
     {
-        $this->sandboxAccount = config('services.paypal.sandboxAccount');
         $this->clientId = config('services.paypal.client_id');
         $this->secret = config('services.paypal.secret');
-        $this->baseUrl = "https://api-m.{$this->sandboxAccount}.paypal.com";
+        $this->baseUrl = config('services.paypal.base_url');
     }
 
-    public function getAccessToken(): string
+    private function getAccessToken(): string
     {
         $response = Http::withBasicAuth($this->clientId, $this->secret)
             ->asForm()
@@ -47,7 +44,7 @@ class PayPalPaymentGateway implements PaymentGatewayInterface
                 ]
             ],
             'application_context' => [
-                'return_url' => route('paypal.capture'),
+                'return_url' => route('paypal.capture', ['payment_method' => 'paypal']),
                 'cancel_url' => route('welcome'),
             ]
         ];

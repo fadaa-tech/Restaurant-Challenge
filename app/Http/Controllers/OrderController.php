@@ -23,18 +23,9 @@ class OrderController extends Controller
      */
     public function store(StoreOrderRequest $request)
     {
-        $order = $this->orderService->placeOrder($request->validated());
+        $response = $this->orderService->placeOrder($request->validated());
 
-        if ($order) {
-            return response()->json([
-                'message' => 'Order created successfully.',
-                'data' => [
-                    'order_id' => $order->id,
-                ]
-            ], 201);
-        }
-
-        return response()->json(['message' => 'Order creation failed.'], 400);
+        return response()->json($response, $response['status'] === 'success' ? 201 : 400);
     }
 
     /**

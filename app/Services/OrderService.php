@@ -21,18 +21,21 @@ class OrderService
 
             $order = $this->orderRepo->store($order);
 
-            $this->productRepo->updateInventory($order->items);            
+            $this->productRepo->updateInventory($order->items);
 
             DB::commit();
 
             event(new CustomerOrderNotification($order));
 
+            return $this->paymentService->processPayment($order->id);
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Order creation failed: ' . $e->getMessage());
+            
+            return [
+                'status' => 'failed',
+                'message' => $e->getMessage()
+            ];
         }
-
-        return $order;
     }
 
     private function calculateOrderDetails(&$order)

@@ -13,6 +13,7 @@ Route::apiResource('/order_items', App\Http\Controllers\OrderItemController::cla
 
 
 Route::prefix('/payment')->controller(App\Http\Controllers\PaymentController::class)->group(function () {
-    Route::post('/create_order', 'processPayment')->name('paypal.charge');
+    // we don't need this method, payment processing is handled in the OrderService
+    // Route::post('/create_order', 'processPayment')->name('paypal.charge');
     Route::get('/capture_order', 'capturePayment')->name('paypal.capture');
 });
