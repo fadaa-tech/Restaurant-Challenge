@@ -18,6 +18,11 @@ class Order extends Model
      */
     protected $fillable = [
         'name',
+        'customer_id',
+        'branch_id',
+        'payment_method',
+        'total_amount',
+        'status',
     ];
 
     /**
@@ -38,5 +43,10 @@ class Order extends Model
     public function items(): HasMany
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(Customer::class);
     }
 }

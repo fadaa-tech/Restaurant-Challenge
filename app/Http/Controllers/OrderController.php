@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreOrderRequest;
 use App\Http\Requests\UpdateOrderRequest;
 use App\Models\Order;
+use App\Services\OrderService;
 
 class OrderController extends Controller
 {
+    public function __construct(protected OrderService $orderService) {}
     /**
      * Display a listing of the resource.
      */
@@ -21,7 +23,9 @@ class OrderController extends Controller
      */
     public function store(StoreOrderRequest $request)
     {
-        //
+        $response = $this->orderService->placeOrder($request->validated());
+
+        return response()->json($response, $response['status'] === 'success' ? 201 : 400);
     }
 
     /**
