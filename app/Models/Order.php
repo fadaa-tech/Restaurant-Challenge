@@ -18,6 +18,26 @@ class Order extends Model
      */
     protected $fillable = [
         'name',
+        'branch_id',
+        'customer_email',
+        'customer_phone',
+        'subtotal',
+        'tax',
+        'discount',
+        'total',
+        'status',
+    ];
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array<string, string>
+     */
+    protected $casts = [
+        'subtotal' => 'decimal:2',
+        'tax' => 'decimal:2',
+        'discount' => 'decimal:2',
+        'total' => 'decimal:2',
     ];
 
     /**
@@ -27,7 +47,7 @@ class Order extends Model
      */
     public function branch(): BelongsTo
     {
-        return $this->belongsTo(Order::class);
+        return $this->belongsTo(Branch::class);
     }
 
     /**
@@ -38,5 +58,15 @@ class Order extends Model
     public function items(): HasMany
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    /**
+     * Get the total amount for the order.
+     *
+     * @return float
+     */
+    public function getTotalAmount(): float
+    {
+        return $this->total ?? 0.0;
     }
 }
