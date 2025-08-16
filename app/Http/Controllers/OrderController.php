@@ -2,26 +2,29 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Order;
+use App\Traits\ResponseTrait;
+use App\Services\OrderService;
 use App\Http\Requests\StoreOrderRequest;
 use App\Http\Requests\UpdateOrderRequest;
-use App\Models\Order;
 
 class OrderController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    use ResponseTrait;
+    protected $orderService;
+
+    public function __construct(OrderService $orderService)
     {
-        //
+        $this->orderService = $orderService;
     }
 
-    /**
+      /**
      * Store a newly created resource in storage.
      */
     public function store(StoreOrderRequest $request)
     {
-        //
+
+        return $this->success($this->orderService->placeOrder($request->validated()), "Order created successfully") ? : $this->error("Could not create order");
     }
 
     /**

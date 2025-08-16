@@ -7,12 +7,14 @@ use App\Models\OrderItem;
 use App\Services\RevenueManager;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 class RevenueManagerTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_calculates_total_revenue()
+    #[Test]
+    public function calculates_total_revenue()
     {
         $order1 = Order::factory()->create();
 

@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
-use App\Models\Order;
-
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 class RevenueManager
 {
     /**
@@ -11,18 +11,15 @@ class RevenueManager
      *
      * @return float
      */
-    public static function calculateTotalRevenue(): float
-    {
-        $totalRevenue = 0.0;
+   public static function calculateTotalRevenue(): float
+{
+    return Cache::remember('daily_revenue_' . today()->toDateString(), 3600, function () {
+        return (float) DB::table('order_items')
+            ->join('orders', 'order_items.order_id', '=', 'orders.id')
+            ->whereDate('orders.created_at', today())
+            ->selectRaw('SUM(order_items.quantity * order_items.price) as total')
+            ->value('total');
+    });
+}
 
-        Order::query()->chunk(100, function ($orders) use (&$totalRevenue) {
-            $orders->each(function ($order) use (&$totalRevenue) {
-                $order->items()->each(function ($orderItem) use (&$totalRevenue) {
-                    $totalRevenue += $orderItem->quantity * $orderItem->price;
-                });
-            });
-        });
-
-        return $totalRevenue;
-    }
 }

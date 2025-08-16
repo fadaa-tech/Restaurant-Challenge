@@ -1,147 +1,52 @@
 <?php
-
 namespace App\Services;
 
 use App\Models\Order;
+use Illuminate\Support\Facades\DB;
+use Throwable;
 
 class OrderService
 {
-    /**
-     * The payment gateway for processing payments.
-     *
-     * @var
-     */
-    private $checkoutPaymentGateway;
+    protected $validator;
+    protected $calculator;
+    protected $paymentProcessor;
+    protected $inventoryManager;
+    protected $notificationService;
+    protected $invoiceService;
 
-    /**
-     * The inventory manager for updating inventory.
-     *
-     * @var
-     */
-    private $inventoryManager;
-
-    /**
-     * The OrderService constructor.
-     *
-     * @param $checkoutPaymentGateway
-     * @param $inventoryManager
-     */
-    public function __construct($checkoutPaymentGateway, $inventoryManager)
-    {
-        $this->checkoutPaymentGateway = $checkoutPaymentGateway;
+    public function __construct(
+        OrderValidator $validator,
+        OrderCalculator $calculator,
+        PaymentProcessor $paymentProcessor,
+        InventoryManager $inventoryManager,
+        NotificationService $notificationService,
+        InvoiceService $invoiceService
+    ) {
+        $this->validator = $validator;
+        $this->calculator = $calculator;
+        $this->paymentProcessor = $paymentProcessor;
         $this->inventoryManager = $inventoryManager;
+        $this->notificationService = $notificationService;
+        $this->invoiceService = $invoiceService;
     }
 
-    /**
-     * Validates the order, calculates order details, processes the order and payment,
-     * notifies the customer, and sends an invoice.
-     *
-     * @param Order $order
-     *
-     * @return void
-     */
     public function placeOrder(Order $order): void
     {
-        $order = $this->validateOrder($order);
-        $order = $this->calculateOrderDetails($order);
+        DB::transaction(function () use ($order) {
+            $this->validator->validate($order);
 
-        $this->processOrder($order);
-        $this->processPayment($order);
+            $order = $this->calculator->calculate($order);
 
-        $this->notifyCustomer($order);
-        $this->sendInvoice($order);
+            $order->save();
+
+            $this->paymentProcessor->process($order->total_amount);
+
+            $this->inventoryManager->updateInventory($order);
+
+            $this->notificationService->notifyCustomer($order);
+
+            $this->invoiceService->sendInvoice($order);
+        });
     }
-
-    /**
-     * Stores the order and updates the inventory.
-     *
-     * @param $order
-     *
-     * @return void
-     */
-    private function processOrder($order): void
-    {
-        $this->storeOrder($order);
-
-        $this->inventoryManager->updateInventory($order);
-    }
-
-    /**
-     * Uses the checkout payment gateway to process the payment.
-     *
-     * @param $order
-     *
-     * @return void
-     */
-    private function processPayment($order): void
-    {
-        $this->checkoutPaymentGateway->processPayment($order->getTotalAmount());
-    }
-
-    /**
-     * Sends a notification to the customer about the order.Options can include
-     * Push or SMS notifications.
-     *
-     * @param $order
-     *
-     * @return void
-     */
-    private function notifyCustomer($order)
-    {
-        // Notify the customer about the order.
-    }
-
-    /**
-     * Sends an invoice to the customer. Options can include email with invoice attachment
-     * or SMS with an invoice link.
-     *
-     * @param $order
-     *
-     * @return void
-     */
-    private function sendInvoice($order)
-    {
-        // Send the invoice to the customer.
-    }
-
-    /**
-     * Validates the order data.
-     *
-     * @param $order
-     *
-     * @return bool
-     * @thows ValidationException
-     */
-    private function validateOrder($order): bool
-    {
-        // Validate the order data.
-
-        return true;
-    }
-
-    /**
-     * Calculates the details of the order such as total amount, taxes, discounts, etc.
-     *
-     * @param $order
-     *
-     * @return void
-     */
-    private function calculateOrderDetails($order)
-    {
-        // Calculate the order details.
-    }
-
-    /**
-     * Stores the order in the database or any other storage mechanism.
-     *
-     * @param $order
-     *
-     * @return void
-     */
-    private function storeOrder($order)
-    {
-        // Store the order.
-    }
-
-
+    
 }
